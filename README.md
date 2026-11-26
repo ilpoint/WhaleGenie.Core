@@ -102,7 +102,7 @@ Release 基线（2026-11，本机）：
 | devices-files | 50 | 76.00% | 引号、双引号、单元格里的换行、空白行开关、自动分隔与写回都已补用例 |
 | expressions-value | 208 | 67.79% | `Value` 自己的读数、比较与写法补了 11 条（空值、大小写、真假、日期与哈希）；剩下的是构造器里的等价路径与 `JsonValues` 的字符串分支 |
 | expressions-writer | 196 | 66.33% | 渲染 12 条与写法 7 条（名字/散文/一串/公式/组/NameOf）；剩下的多是构造器与改名的等价路径 |
-| rules | 475 | 59.37% | 重试的三个决定抽成 `RetryPolicy`（16 条用例），|
+| rules | 516 | 69.77% | 重试、滚动、计数与调用边界抽成纯决策并用各自用例钉住；`CallBinder` 的 16 条按每条拒绝理由覆盖；剩下的是 `HitSort` 的边界与 `StepArguments` 的读取 |
 
 形状往返的判定仍以 `FormulaJsonTests` 的规范比较为准；录制区域的判定是 `RecordingTests`。
 
