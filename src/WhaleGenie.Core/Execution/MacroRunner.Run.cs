@@ -248,10 +248,21 @@ public sealed partial class MacroRunner
 
             return outcome;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
             Log(LogLevel.Warn, 0, string.Empty, LogKeys.Stopped, _run.Executed);
             return new RunResult(RunStatus.Stopped, string.Empty, string.Empty, _run.Executed);
+        }
+        catch (OperationCanceledException failure)
+        {
+            // A cancellation that did not come from this run's token is not a stop the person
+            // asked for: a device or a library gave up on what it was doing, and the run reports
+            // it as a failure of the step rather than as the macro being stopped.
+            var detail = failure.Message.Length > 0 ? failure.Message : failure.GetType().Name;
+            _here.Failure = new StepFailure(RunKeys.Cancelled, detail);
+            Log(LogLevel.Error, 0, string.Empty, RunKeys.Cancelled, detail);
+            LeaveFailureLog();
+            return new RunResult(RunStatus.Failed, RunKeys.Cancelled, detail, _run.Executed);
         }
         finally
         {

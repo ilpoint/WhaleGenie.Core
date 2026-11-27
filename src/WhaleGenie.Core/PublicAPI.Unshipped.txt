@@ -16,3 +16,4 @@ WhaleGenie.Core.Expressions.EvaluationContext.Notes.get -> WhaleGenie.Core.Expre
 WhaleGenie.Core.Expressions.EvaluationContext.WithNotes(WhaleGenie.Core.Expressions.IExpressionNotes? notes) -> WhaleGenie.Core.Expressions.EvaluationContext!
 
 WhaleGenie.Core.Expressions.IExpressionNotes
+const WhaleGenie.Core.Execution.RunKeys.Cancelled = "Run.Cancelled" -> string!
