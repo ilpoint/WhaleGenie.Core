@@ -30,6 +30,13 @@ public sealed partial class MacroRunner
         return _run.Cleanup.Token;
     }
 
+    /// <summary>
+    /// 1 while a run is in progress. A runner carries the state of one run, so a second run started
+    /// on it before the first is over would write into the same bookkeeping; it is refused instead
+    /// of failing in whatever way the two happen to collide.
+    /// </summary>
+    private int _running;
+
     /// <summary>How long a controller button stays down when the step asked for no time in particular.</summary>
     private const int ShortestPressMs = 50;
 
@@ -146,8 +153,32 @@ public sealed partial class MacroRunner
         => milliseconds <= 0 ? 0 : (int)Math.Round(milliseconds * DelayScale);
 
     /// <summary>Runs the steps and reports how the run ended.</summary>
+    /// <exception cref="InvalidOperationException">
+    /// Another run on this runner has not finished yet. A runner is for one run at a time; a caller
+    /// that wants two at once makes a second one.
+    /// </exception>
     public async Task<RunResult> RunAsync(IReadOnlyList<ExecutableStep> steps,
         CancellationToken token = default)
+    {
+        if (Interlocked.Exchange(ref _running, 1) != 0)
+        {
+            throw new InvalidOperationException(
+                "A MacroRunner runs one macro at a time; make a second one for a second run.");
+        }
+
+        try
+        {
+            return await RunOnceAsync(steps, token);
+        }
+        finally
+        {
+            Volatile.Write(ref _running, 0);
+        }
+    }
+
+    /// <summary>The body of one run, called with the runner already claimed.</summary>
+    private async Task<RunResult> RunOnceAsync(IReadOnlyList<ExecutableStep> steps,
+        CancellationToken token)
     {
         _run.Begin(token, steps, InitialCallDepth);
         _here.Failure = null;
